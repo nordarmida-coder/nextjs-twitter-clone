@@ -1,65 +1,86 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useEffect, useState } from "react";
+import TweetCard from "../components/TweetCard";
+import Link from "next/link";
+
+export default function HomePage() {
+  const [tweets, setTweets] = useState([]);
+
+  useEffect(() => {
+    async function fetchTweets() {
+      try {
+        const [apiRes, localRes] = await Promise.all([
+          fetch("https://dummyjson.com/posts").then((r) => r.json()),
+          fetch("/api/tweets").then((r) => r.json()),
+        ]);
+        const allTweets = [...(localRes || []), ...(apiRes.posts || [])];
+        setTweets(allTweets);
+      } catch (err) {
+        console.error("Error loading tweets:", err);
+      }
+    }
+
+    fetchTweets();
+  }, []);
+
+  async function handleReact(tweet, action) {
+    const isLocal = String(tweet.id).length >= 13;
+    const url = isLocal
+      ? `/api/tweets/${tweet.id}`
+      : `https://dummyjson.com/posts/${tweet.id}`;
+
+    try {
+      const res = await fetch(url, {
+        method: isLocal ? "PATCH" : "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+
+      if (res.ok) {
+        setTweets((prev) =>
+          prev.map((t) =>
+            t.id === tweet.id
+              ? {
+                  ...t,
+                  reactions: {
+                    likes:
+                      action === "like"
+                        ? (t.reactions?.likes ?? 0) + 1
+                        : t.reactions?.likes ?? 0,
+                    dislikes:
+                      action === "dislike"
+                        ? (t.reactions?.dislikes ?? 0) + 1
+                        : t.reactions?.dislikes ?? 0,
+                  },
+                }
+              : t
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error updating tweet:", error);
+    }
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main className="relative">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
+        {tweets.length > 0 ? (
+          tweets.map((tweet) => (
+            <TweetCard key={tweet.id} tweet={tweet} onReact={handleReact} />
+          ))
+        ) : (
+          <p className="text-gray-500 dark:text-gray-400">No tweets yet.</p>
+        )}
+      </div>
+
+      <Link
+        href="/tweet/new"
+        className="fixed bottom-8 right-8 bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-full shadow-lg transition-all duration-300 text-lg"
+      >
+        ➕ Add Tweet
+      </Link>
+    </main>
   );
 }

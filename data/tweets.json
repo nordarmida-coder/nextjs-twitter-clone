@@ -1,0 +1,62 @@
+[
+  {
+    "id": "1761646294142",
+    "title": "Tweet1",
+    "body": "Tweet",
+    "reactions": {
+      "likes": 3,
+      "dislikes": 3
+    },
+    "tags": [
+      "local"
+    ]
+  },
+  {
+    "id": "1761603261306",
+    "title": "1",
+    "body": "1",
+    "reactions": {
+      "likes": 6,
+      "dislikes": 3
+    },
+    "tags": [
+      "local"
+    ]
+  },
+  {
+    "id": "1761603122174",
+    "title": "Tweet",
+    "body": "New tweet",
+    "reactions": {
+      "likes": 0,
+      "dislikes": 0
+    },
+    "tags": [
+      "local"
+    ]
+  },
+  {
+    "id": "1761602807962",
+    "title": "Tweet",
+    "body": "New tweet",
+    "reactions": {
+      "likes": 0,
+      "dislikes": 0
+    },
+    "tags": [
+      "local"
+    ]
+  },
+  {
+    "id": "1761595453994",
+    "title": "Tweet",
+    "body": "New tweet",
+    "reactions": {
+      "likes": 4,
+      "dislikes": 5
+    },
+    "tags": [
+      "local"
+    ]
+  }
+]
